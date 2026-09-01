@@ -1,8 +1,22 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace RPGManager;
 
 public class Campaign
 {
-    public List<Character> Characters { get; private set; } = [];
+    public List<Character> Characters { get; private set; }
+
+    [JsonConstructor]
+    public Campaign(List<Character> characters)
+    {
+        Characters = characters;
+    }
+    public Campaign()
+    {
+        Characters = [];
+    }
+
 
     public void AddCharacter(Character character)
     {
@@ -11,5 +25,19 @@ public class Campaign
     public void RemoveCharacter(Character character)
     {
         Characters.Remove(character);
+    }
+
+    public bool DiffersFrom(Campaign? otherCampaign)
+    {
+        if (otherCampaign == null) return true;
+        if (this.Characters.Count != otherCampaign.Characters.Count) return true;
+        for (int i = 0; i < Characters.Count; i++)
+        {
+            if (this.Characters[i].DiffersFrom(otherCampaign.Characters[i]))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

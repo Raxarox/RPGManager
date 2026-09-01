@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace RPGManager;
 
 public class Character
@@ -14,7 +15,29 @@ public class Character
     private Character()
     {
     }
+    [JsonConstructor]
+    public Character(
+        string name,
+        string characterClass,
+        int attackPower,
+        int maxHealth,
+        int health)
+    {
+        if (!SetName(name))
+            throw new JsonException("Invalid character name.");
 
+        if (!SetCharacterClass(characterClass))
+            throw new JsonException("Invalid character class.");
+
+        if (!SetMaxHealth(maxHealth))
+            throw new JsonException("Invalid max health.");
+
+        if (!SetHealth(health))
+            throw new JsonException("Invalid health.");
+
+        if (!SetAttackPower(attackPower))
+            throw new JsonException("Invalid attack power.");
+    }
     public static bool TryCreate(
         string? name,
         string? characterClass,
@@ -109,5 +132,20 @@ public class Character
 
         Health = Math.Min(health, MaxHealth);
         return true;
+    }
+
+    public bool DiffersFrom(Character? otherCharacter)
+    {
+        foreach (var prop in typeof(Character).GetProperties())
+        {
+            //for future custom List<Object> properties:
+            //if (prop.Name == nameof(Inventory)) continue; 
+            var thisValue = prop.GetValue(this);
+            var otherValue = prop.GetValue(otherCharacter);
+            if (!object.Equals(thisValue, otherValue)) return true;
+        }
+        //if (this.Inventory.HasChanges(other.Inventory)) return true;
+
+        return false;
     }
 }

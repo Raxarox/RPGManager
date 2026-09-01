@@ -4,8 +4,9 @@ public static class Game
 {
     public static void RunGame()
     {
-        var campaign = new Campaign();
+        Campaign campaign = new Campaign();
         var exit = false;
+        Campaign savedCampaign = new Campaign();
         while (!exit)
         {
             Console.WriteLine("""
@@ -15,7 +16,9 @@ public static class Game
                               """);
             Console.WriteLine("1. Create Character");
             Console.WriteLine("2. Edit characters");
-            Console.WriteLine("3. Exit");
+            Console.WriteLine("3. Save Campaign");
+            Console.WriteLine("4. Load Campaign");
+            Console.WriteLine("5. Exit");
             var mainMenuInput = Console.ReadLine();
             switch (mainMenuInput)
             {
@@ -32,7 +35,18 @@ public static class Game
                     EditCharactersMenu(campaign);
                     break;
                 case "3":
-                    exit = true;
+                    savedCampaign= SaveCampaignMenu(campaign);
+                    Console.WriteLine(campaign.DiffersFrom(savedCampaign));
+                    break;
+                case "4":
+                    if(ExitConfirmationMenu(campaign, savedCampaign))
+                    {
+                        (campaign, savedCampaign) = LoadCampaignMenu(campaign, savedCampaign);
+                    }
+                    break;
+                case "5":
+                    if(ExitConfirmationMenu(campaign, savedCampaign)) 
+                        exit = true;
                     break;
                 default:
                     Console.WriteLine("Invalid input.");
@@ -124,23 +138,11 @@ public static class Game
         PrintCharacters(campaign);
         Console.WriteLine("Which character would you like to remove? Please enter the character's ID");
         var character = campaign.Characters[GetCharacterIndex(campaign.Characters)];
-            var close = false;
-            while (!close)
-            {
-                Console.WriteLine("Are you sure you want to remove " + character.Name + "?");
-                Console.WriteLine(GetCharacterInfo(character));
-                Console.WriteLine("1. Remove Character.");
-                Console.WriteLine("2. Cancel.");
-                var confirmationInput = Console.ReadLine();
-                if (confirmationInput == "1")
-                {
-                    Console.WriteLine(character.Name + " removed.");
-                    campaign.RemoveCharacter(character);
-                    close = true;
-                }
-                else if (confirmationInput == "2") close = true;
-                else Console.WriteLine("Invalid input.");
-            }
+        Console.WriteLine("Are you sure you want to remove " + character.Name + "?");
+        Console.WriteLine(GetCharacterInfo(character));
+        if (OperationConfirmationMenu())campaign.RemoveCharacter(character);
+                   
+            
 
     }
     private static int GetCharacterIndex(List<Character> characters)
@@ -220,5 +222,86 @@ public static class Game
         Console.WriteLine("What would you like to change " + character.Name + "'s attack power to?");
         character.SetAttackPower(GetPositiveIntegerFor("attack power"));
         Console.WriteLine("Character's attack power changed to '" + character.AttackPower + "' successfully");
+    }
+
+    private static Campaign SaveCampaignMenu(Campaign campaign)
+    {
+        Console.WriteLine("What would you like to save the campaign as?");
+        var input = Console.ReadLine();
+        if (!string.IsNullOrEmpty(input)&&!File.Exists(SaveManager.GetFileNamed(input)))
+        {
+            var savedPath = SaveManager.GetFileNamed(input);
+            SaveManager.Serialize(campaign, input);
+            return SaveManager.Deserialize(savedPath);
+        }
+        if (string.IsNullOrEmpty(input))
+        {
+            Console.WriteLine("Please enter a campaign name.");
+            return campaign;
+        }
+        Console.WriteLine("The campaign file already exists. Do you want to overwrite it?");
+            if(OperationConfirmationMenu())
+            {
+                var savedPath = SaveManager.GetFileNamed(input);
+                SaveManager.Serialize(campaign, input);
+                return SaveManager.Deserialize(savedPath);
+            }
+
+            return campaign;
+    }
+    private static (Campaign Campaign, Campaign SavedCampaign) LoadCampaignMenu(Campaign campaign, Campaign savedCampaign)
+    {
+        while (true)
+        {
+            Console.WriteLine("What campaign would you like to load?");
+            var saves = SaveManager.GetSaves();
+            int i;
+            for (i = 0; i < saves.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}. {Path.GetFileNameWithoutExtension(saves[i])}");
+            }
+
+            Console.WriteLine($"{i + 1}. Cancel load.");
+            var selectedFile = Console.ReadLine();
+            if (int.TryParse(selectedFile, out var selectedFileNumber) &&
+                selectedFileNumber > 0 &&
+                selectedFileNumber <= saves.Length)
+            {
+                var loadedCampaign = SaveManager.Deserialize(saves[selectedFileNumber - 1]);
+                savedCampaign = SaveManager.Deserialize(saves[selectedFileNumber - 1]);
+                
+                return (loadedCampaign, savedCampaign);
+            }
+            else if(selectedFile == $"{i+1}")
+            {
+                Console.WriteLine("Load cancelled.");
+                return (campaign, savedCampaign);
+            }
+            else Console.WriteLine("Invalid input.");
+        }
+    }
+
+    private static bool ExitConfirmationMenu(Campaign campaign, Campaign? savedCampaign)
+    {
+        if (!campaign.DiffersFrom(savedCampaign) || campaign.Characters.Count == 0) return true;
+        Console.WriteLine("You haven't saved your current campaign. Are you sure you want to proceed?");
+        return OperationConfirmationMenu();
+    }
+
+    private static bool OperationConfirmationMenu()
+    {
+        Console.WriteLine("1. Yes");
+        Console.WriteLine("2. No");
+        var confirmationInput = Console.ReadLine();
+        while (confirmationInput != "1" && confirmationInput != "2")
+        {
+            Console.WriteLine("Invalid input.");
+            confirmationInput = Console.ReadLine();
+        }
+
+        if (confirmationInput != "2") return true;
+        Console.WriteLine("Operation cancelled.");
+        return false;
+
     }
 }
