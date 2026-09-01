@@ -58,7 +58,7 @@ public static class Game
         var input = ConsoleUI.GetNewCharacterDetails(Character.ValidClasses);
 
         if (!Character.TryCreate(
-                input.Name, input.CharacterClass, input.Hp, input.Ap,
+                input.Name, input.CharacterClass, input.Hp,
                 out var character, out var errorMessage))
         {
             Console.WriteLine($"Could not create character: {errorMessage}");

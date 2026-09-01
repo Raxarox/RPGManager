@@ -8,7 +8,7 @@ public class Character
     public string Name { get; private set; } = string.Empty;
     public string CharacterClass { get; private set;} = string.Empty;
     public static readonly List<string> ValidClasses = ["Warrior", "Wizard", "Rogue"];
-    public int AttackPower { get; private set;}
+    public AbilityScore AbilityScores { get; private set; } = new();
     public int MaxHealth { get; private set;}
     public int Health { get; private set;}
 
@@ -19,9 +19,9 @@ public class Character
     public Character(
         string name,
         string characterClass,
-        int attackPower,
         int maxHealth,
-        int health)
+        int health,
+        AbilityScore? abilityScores = null)
     {
         if (!SetName(name))
             throw new JsonException("Invalid character name.");
@@ -35,14 +35,12 @@ public class Character
         if (!SetHealth(health))
             throw new JsonException("Invalid health.");
 
-        if (!SetAttackPower(attackPower))
-            throw new JsonException("Invalid attack power.");
+        AbilityScores = abilityScores ?? new AbilityScore();
     }
     public static bool TryCreate(
         string? name,
         string? characterClass,
         int maxHealth,
-        int attackPower,
         [NotNullWhen(true)] out Character? character,
         out string errorMessage)
     {
@@ -75,12 +73,6 @@ public class Character
             return false;
         }
 
-        if (!newCharacter.SetAttackPower(attackPower))
-        {
-            errorMessage = "Attack power must be greater than zero.";
-            return false;
-        }
-
         character = newCharacter;
         return true;
     }
@@ -106,15 +98,6 @@ public class Character
         return true;
     }
 
-    public bool SetAttackPower(int attackPower)
-    {
-        if (attackPower <= 0)
-            return false;
-
-        AttackPower = attackPower;
-        return true;
-    }
-
     public bool SetMaxHealth(int maxHealth)
     {
         if (maxHealth <= 0)
@@ -136,10 +119,18 @@ public class Character
 
     public bool DiffersFrom(Character? otherCharacter)
     {
+        if (otherCharacter == null) return true;
+
         foreach (var prop in typeof(Character).GetProperties())
         {
             //for future custom List<Object> properties:
-            //if (prop.Name == nameof(Inventory)) continue; 
+            if (prop.Name == nameof(AbilityScores))
+            {
+                if (AbilityScores.DiffersFrom(otherCharacter.AbilityScores)) return true;
+                continue;
+            }
+
+            //if (prop.Name == nameof(Inventory)) continue;
             var thisValue = prop.GetValue(this);
             var otherValue = prop.GetValue(otherCharacter);
             if (!Equals(thisValue, otherValue)) return true;

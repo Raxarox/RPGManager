@@ -4,20 +4,13 @@ public static class ConsoleUI
 {
     public static string GetCharacterInfo(Character character)
     {
+        var scores = character.AbilityScores;
         return character.Name + " - " +
                character.CharacterClass + " - " +
                character.MaxHealth + " Max HP - " +
-               character.Health + " HP - " +
-               character.AttackPower + " ATK.";
-    }
-
-    public static void PrintCharacters(Campaign campaign)
-    {
-        for (var i = 0; i < campaign.Characters.Count; i++)
-        {
-            Console.WriteLine("ID: " + i + ". " +
-                              GetCharacterInfo(campaign.Characters[i]));
-        }
+               character.Health + " HP." +
+               $"\nSTR: {scores.Strength} | DEX: {scores.Dexterity} | CON: {scores.Constitution} | " +
+               $"INT: {scores.Intelligence} | WIS: {scores.Wisdom} | CHA: {scores.Charisma}";
     }
 
     public static int GetPositiveIntegerFor(string valueName)
@@ -27,20 +20,6 @@ public static class ConsoleUI
             Console.WriteLine("What is the character's new " + valueName + "? (Only positive values allowed).");
             var input = Console.ReadLine();
             if (int.TryParse(input, out var result) && result > 0)
-            {
-                return result;
-            }
-
-            Console.WriteLine("Invalid input.");
-        }
-    }
-
-    public static int GetCharacterIndex(List<Character> characters)
-    {
-        while (true)
-        {
-            var input = Console.ReadLine();
-            if (int.TryParse(input, out var result) && result >= 0 && result < characters.Count)
             {
                 return result;
             }
@@ -65,7 +44,7 @@ public static class ConsoleUI
         return false;
     }
     
-    public static (string? Name, string? CharacterClass, int Hp, int Ap)
+    public static (string? Name, string? CharacterClass, int Hp)
         GetNewCharacterDetails(IEnumerable<string> validClasses)
     {
         Console.WriteLine("What is the character's name?");
@@ -77,8 +56,6 @@ public static class ConsoleUI
         var characterClass = Console.ReadLine();
 
         var hp = GetPositiveIntegerFor("HP");
-        var ap = GetPositiveIntegerFor("attack power");
-
-        return (name, characterClass, hp, ap);
+        return (name, characterClass, hp);
     }
 }
