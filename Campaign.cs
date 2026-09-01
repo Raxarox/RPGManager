@@ -1,22 +1,20 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 namespace RPGManager;
 
 public class Campaign
 {
     public List<Character> Characters { get; private set; }
+    
+    public Campaign()
+    {
+        Characters = [];
+    }
 
     [JsonConstructor]
     public Campaign(List<Character> characters)
     {
         Characters = characters;
     }
-    public Campaign()
-    {
-        Characters = [];
-    }
-
 
     public void AddCharacter(Character character)
     {

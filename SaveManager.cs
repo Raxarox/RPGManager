@@ -5,28 +5,36 @@ public static class SaveManager
 {
     private const string SaveDirectory = "Saves";
 
-    public static void Serialize(Campaign campaign, string fileName)
+    public static void Save(Campaign campaign, string saveName)
     {
-        
         Directory.CreateDirectory(SaveDirectory);
-        var filePath = Path.Combine(SaveDirectory, fileName + ".json");
+        var filePath = GetSavePath(saveName);
         var json = JsonSerializer.Serialize(campaign);
         File.WriteAllText(filePath, json);
     }
 
-    public static Campaign Deserialize(string fileName)
+    public static Campaign Load(string saveName)
     {
-        return JsonSerializer.Deserialize<Campaign>(File.ReadAllText(fileName)) 
+        var filePath = GetSavePath(saveName);
+        return JsonSerializer.Deserialize<Campaign>(File.ReadAllText(filePath))
                ?? throw new InvalidOperationException("The campaign file was empty or could not be deserialized.");
     }
 
-    public static string GetFileNamed(string fileName)
+    public static bool SaveExists(string saveName)
     {
-        return Path.Combine(SaveDirectory, fileName + ".json");
+        return File.Exists(GetSavePath(saveName));
     }
 
-    public static string[] GetSaves()
+    public static string[] GetSaveNames()
     {
-                    return Directory.GetFiles("Saves", "*.json");
+        if (!Directory.Exists(SaveDirectory)) return [];
+
+        return Directory.GetFiles(SaveDirectory, "*.json")
+            .Select(Path.GetFileNameWithoutExtension)
+            .OfType<string>()
+            .ToArray();
     }
+
+    private static string GetSavePath(string saveName) =>
+        Path.Combine(SaveDirectory, saveName + ".json");
 }

@@ -142,7 +142,7 @@ public class Character
             //if (prop.Name == nameof(Inventory)) continue; 
             var thisValue = prop.GetValue(this);
             var otherValue = prop.GetValue(otherCharacter);
-            if (!object.Equals(thisValue, otherValue)) return true;
+            if (!Equals(thisValue, otherValue)) return true;
         }
         //if (this.Inventory.HasChanges(other.Inventory)) return true;
 
