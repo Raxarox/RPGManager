@@ -86,38 +86,54 @@ public static class GameRunner
     {
         Console.WriteLine("What would you like to save the campaign as?");
         var input = Console.ReadLine();
-        if (!string.IsNullOrEmpty(input) && !SaveManager.SaveExists(input))
+        try
         {
+            if (!string.IsNullOrEmpty(input) && !SaveManager.SaveExists(input))
+            {
+                SaveManager.Save(campaign, input);
+                return SaveManager.Load(input);
+            }
+
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("Please enter a campaign name.");
+                return campaign;
+            }
+
+            Console.WriteLine("The campaign file already exists. Do you want to overwrite it?");
+            if (!ConsolePrompts.ConfirmOperation()) return campaign;
             SaveManager.Save(campaign, input);
             return SaveManager.Load(input);
         }
-        if (string.IsNullOrEmpty(input))
+        catch (InvalidOperationException ex)
         {
-            Console.WriteLine("Please enter a campaign name.");
+            Console.WriteLine($"[SAVE ERROR] {ex.Message}");
             return campaign;
         }
-        Console.WriteLine("The campaign file already exists. Do you want to overwrite it?");
-        if (!ConsolePrompts.ConfirmOperation()) return campaign;
-        SaveManager.Save(campaign, input);
-            return SaveManager.Load(input);
-
     }
     private static (Campaign Campaign, Campaign SavedCampaign)
         LoadCampaignMenu(Campaign campaign, Campaign savedCampaign)
     {
-        var selectedSave = ConsolePrompts.SelectFromList(
-            () => SaveManager.GetSaveNames(),
-            saveName => saveName,
-            "What campaign would you like to load?");
-
-        if (selectedSave is null)
+        try
         {
-            Console.WriteLine("Load cancelled.");
+            var selectedSave = ConsolePrompts.SelectFromList(
+                SaveManager.GetSaveNames,
+                saveName => saveName,
+                "What campaign would you like to load?");
+            if (selectedSave == null)
+            {
+                Console.WriteLine("Load cancelled.");
+                return (campaign, savedCampaign);
+            }
+
+            var loadedCampaign = SaveManager.Load(selectedSave);
+            return (loadedCampaign, loadedCampaign);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"[LOAD ERROR] {ex.Message}");
             return (campaign, savedCampaign);
         }
-
-        var loadedCampaign = SaveManager.Load(selectedSave);
-        return (loadedCampaign, loadedCampaign);
     }
 
     private static bool ExitConfirmationMenu(Campaign campaign, Campaign? savedCampaign)
