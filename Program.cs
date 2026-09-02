@@ -1,3 +1,3 @@
 ﻿using RPGManager;
 
-Game.RunGame();
+GameRunner.RunGame();

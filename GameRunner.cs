@@ -1,6 +1,6 @@
 namespace RPGManager;
 
-public static class Game
+public static class GameRunner
 {
     public static void RunGame()
     {
@@ -55,7 +55,7 @@ public static class Game
     
     private static void CreateCharacter(Campaign campaign)
     {
-        var input = ConsoleUI.GetNewCharacterDetails(Character.ValidClasses);
+        var input = PromptForNewCharacterDetails();
 
         if (!Character.TryCreate(
                 input.Name, input.CharacterClass, input.Hp,
@@ -66,6 +66,20 @@ public static class Game
         }
 
         campaign.AddCharacter(character);
+    }
+
+    private static (string? Name, string? CharacterClass, int Hp) PromptForNewCharacterDetails()
+    {
+        Console.WriteLine("What is the character's name?");
+        var name = Console.ReadLine();
+
+        Console.WriteLine(
+            "What is the character's class?\n" +
+            string.Join("\n", Character.ValidClasses));
+        var characterClass = Console.ReadLine();
+
+        var hp = ConsolePrompts.GetPositiveIntegerFor("HP");
+        return (name, characterClass, hp);
     }
 
     private static Campaign SaveCampaignMenu(Campaign campaign)
@@ -83,50 +97,33 @@ public static class Game
             return campaign;
         }
         Console.WriteLine("The campaign file already exists. Do you want to overwrite it?");
-            if(ConsoleUI.ConfirmOperation())
-            {
-                SaveManager.Save(campaign, input);
-                return SaveManager.Load(input);
-            }
+        if (!ConsolePrompts.ConfirmOperation()) return campaign;
+        SaveManager.Save(campaign, input);
+            return SaveManager.Load(input);
 
-            return campaign;
     }
-    private static (Campaign Campaign, Campaign SavedCampaign) LoadCampaignMenu(Campaign campaign, Campaign savedCampaign)
+    private static (Campaign Campaign, Campaign SavedCampaign)
+        LoadCampaignMenu(Campaign campaign, Campaign savedCampaign)
     {
-        while (true)
-        {
-            Console.WriteLine("What campaign would you like to load?");
-            var saves = SaveManager.GetSaveNames();
-            int i;
-            for (i = 0; i < saves.Length; i++)
-            {
-                Console.WriteLine($"{i + 1}. {saves[i]}");
-            }
+        var selectedSave = ConsolePrompts.SelectFromList(
+            () => SaveManager.GetSaveNames(),
+            saveName => saveName,
+            "What campaign would you like to load?");
 
-            Console.WriteLine($"{i + 1}. Cancel load.");
-            var selectedFile = Console.ReadLine();
-            if (int.TryParse(selectedFile, out var selectedFileNumber) &&
-                selectedFileNumber > 0 &&
-                selectedFileNumber <= saves.Length)
-            {
-                var loadedCampaign = SaveManager.Load(saves[selectedFileNumber - 1]);
-                savedCampaign = SaveManager.Load(saves[selectedFileNumber - 1]);
-                
-                return (loadedCampaign, savedCampaign);
-            }
-            else if(selectedFile == $"{i+1}")
-            {
-                Console.WriteLine("Load cancelled.");
-                return (campaign, savedCampaign);
-            }
-            else Console.WriteLine("Invalid input.");
+        if (selectedSave is null)
+        {
+            Console.WriteLine("Load cancelled.");
+            return (campaign, savedCampaign);
         }
+
+        var loadedCampaign = SaveManager.Load(selectedSave);
+        return (loadedCampaign, loadedCampaign);
     }
 
     private static bool ExitConfirmationMenu(Campaign campaign, Campaign? savedCampaign)
     {
         if (!campaign.DiffersFrom(savedCampaign) || campaign.Characters.Count == 0) return true;
         Console.WriteLine("You haven't saved your current campaign. Are you sure you want to proceed?");
-        return ConsoleUI.ConfirmOperation();
+        return ConsolePrompts.ConfirmOperation();
     }
 }

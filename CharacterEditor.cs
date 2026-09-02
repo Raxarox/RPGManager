@@ -5,7 +5,7 @@ public static class CharacterEditor
     public static void Run(Campaign campaign)
     {
         var exit = false;
-        while (!exit)
+        while (!exit && campaign.Characters.Count > 0)
         {
             Console.WriteLine("CHARACTER EDITOR");
             Console.WriteLine("1. Edit Character");
@@ -30,23 +30,38 @@ public static class CharacterEditor
         }
     }
 
+    private static string FormatCharacter(Character character)
+    {
+        var scores = character.AbilityScores;
+        return character.Name + " - " +
+               character.CharacterClass + " - " +
+               character.MaxHealth + " Max HP - " +
+               character.Health + " HP." +
+               $"\nSTR: {scores.Strength} | DEX: {scores.Dexterity} | CON: {scores.Constitution} | " +
+               $"INT: {scores.Intelligence} | WIS: {scores.Wisdom} | CHA: {scores.Charisma}";
+    }
+
     private static void RemoveCharacter(Campaign campaign)
     {
-        var character = GetCharacter(campaign.Characters,
+        var character = SelectCharacter(campaign,
             "Which character would you like to remove? Please enter the character's ID");
+        if (character is null) return;
+
         Console.WriteLine("Are you sure you want to remove " + character.Name + "?");
-        Console.WriteLine(ConsoleUI.GetCharacterInfo(character));
-        if (ConsoleUI.ConfirmOperation()) campaign.RemoveCharacter(character);
+        Console.WriteLine(FormatCharacter(character));
+        if (ConsolePrompts.ConfirmOperation()) campaign.RemoveCharacter(character);
     }
 
     private static void EditCharacter(Campaign campaign)
     {
-        var character = GetCharacter(campaign.Characters, 
+        var character = SelectCharacter(campaign,
             "Which character would you like to edit? Please enter the character's ID");
+        if (character is null) return;
+
         var close = false;
         while (!close)
         {
-            Console.WriteLine(ConsoleUI.GetCharacterInfo(character));
+            Console.WriteLine(FormatCharacter(character));
             Console.WriteLine("What would you like to edit?");
             Console.WriteLine("1. Edit Name.");
             Console.WriteLine("2. Edit Class.");
@@ -96,7 +111,7 @@ public static class CharacterEditor
     private static void EditMaxHp(Character character)
     {
         Console.WriteLine("What would you like to change " + character.Name + "'s max HP to?");
-        character.SetMaxHealth(ConsoleUI.GetPositiveIntegerFor("max HP"));
+        character.SetMaxHealth(ConsolePrompts.GetPositiveIntegerFor("max HP"));
         Console.WriteLine("Character's max HP changed to '" + character.MaxHealth + "' successfully");
     }
 
@@ -131,14 +146,13 @@ public static class CharacterEditor
 
     private static void EditAbilityScore(string scoreName, Func<int, bool> setScore)
     {
-        var value = ConsoleUI.GetPositiveIntegerFor(scoreName);
+        var value = ConsolePrompts.GetPositiveIntegerFor(scoreName);
         setScore(value);
         Console.WriteLine($"{scoreName} changed to '{value}' successfully");
     }
 
-    private static List<Character> SortCharacters(List <Character> characters)
+    private static IReadOnlyList<Character> SortCharacters(IReadOnlyList<Character> characters)
     {
-        var charactersSorted = characters;
         Console.WriteLine("What would you like to sort the characters by?");
         Console.WriteLine("1. Name.");
         Console.WriteLine("2. Class.");
@@ -149,26 +163,22 @@ public static class CharacterEditor
         switch (input)
         {
             case "1":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.Name)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.Name).ToList();
             case "2":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.CharacterClass)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.CharacterClass).ToList();
             case "3":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.MaxHealth)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.MaxHealth).ToList();
             case "4":
-                charactersSorted = SortByAbilityScore(charactersSorted);
-                return charactersSorted;
+                return SortByAbilityScore(characters);
             case "5":
-                return charactersSorted;
+                return characters;
             default:
                 Console.WriteLine("Invalid input. Sorting by default.");
-                return charactersSorted;
+                return characters;
         }
     }
 
-    private static List<Character> SortByAbilityScore(List<Character> charactersSorted)
+    private static IReadOnlyList<Character> SortByAbilityScore(IReadOnlyList<Character> characters)
     {
         Console.WriteLine("What ability score would you like to sort the characters by?");
         Console.WriteLine("1. STR.");
@@ -182,59 +192,34 @@ public static class CharacterEditor
         switch (input)
         {
             case "1":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.AbilityScores.Strength)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.AbilityScores.Strength).ToList();
             case "2":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.AbilityScores.Dexterity)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.AbilityScores.Dexterity).ToList();
             case "3":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.AbilityScores.Constitution)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.AbilityScores.Constitution).ToList();
             case "4":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.AbilityScores.Intelligence)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.AbilityScores.Intelligence).ToList();
             case "5":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.AbilityScores.Wisdom)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.AbilityScores.Wisdom).ToList();
             case "6":
-                charactersSorted = [.. charactersSorted.OrderBy(c => c.AbilityScores.Charisma)];
-                return charactersSorted;
+                return characters.OrderBy(c => c.AbilityScores.Charisma).ToList();
             case "7":
-                return charactersSorted;
+                return characters;
             default:
                 Console.WriteLine("Invalid input. Sorting by default.");
-                return charactersSorted;
+                return characters;
         }
     }
 
-    private static void PrintCharacters(List<Character> charactersSorted)
+    private static Character? SelectCharacter(Campaign campaign, string prompt)
     {
-        for (var i = 0; i < charactersSorted.Count; i++)
-        {
-            Console.WriteLine("ID: " + i + ". " +
-                              ConsoleUI.GetCharacterInfo(charactersSorted[i]));
-        }
-    }
-    private static Character GetCharacter(List<Character> characters, string prompt)
-    {
-        var displayedCharacters = characters;
-        while (true)
-        {
-            Console.WriteLine(prompt);
-            PrintCharacters(displayedCharacters);
-            Console.WriteLine(displayedCharacters.Count + ". Sort characters");
-            var input = Console.ReadLine();
-            if (int.TryParse(input, out var result) && result >= 0 && result < displayedCharacters.Count)
-            {
-                return displayedCharacters[result];
-            }
+        IReadOnlyList<Character> displayedCharacters = campaign.Characters;
 
-            if (result == displayedCharacters.Count)
-            {
-                displayedCharacters = SortCharacters(displayedCharacters);
-                continue;
-            }
-            Console.WriteLine("Invalid input.");
-        }
+        return ConsolePrompts.SelectFromList(
+            () => displayedCharacters,
+            FormatCharacter,
+            prompt,
+            "Sort characters",
+            () => displayedCharacters = SortCharacters(displayedCharacters));
     }
 }

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace RPGManager;
 
-public class AbilityScore
+public class AbilityScore: IEquatable<AbilityScore>
 {
     public int Strength { get; private set; }
     public int Dexterity { get; private set; }
@@ -44,6 +44,29 @@ public class AbilityScore
                Wisdom != otherAbilityScores.Wisdom ||
                Charisma != otherAbilityScores.Charisma;
     }
+
+    public bool Equals(AbilityScore? other)
+    {
+        if (other is null) return false;
+
+        return Strength == other.Strength &&
+               Dexterity == other.Dexterity &&
+               Constitution == other.Constitution &&
+               Intelligence == other.Intelligence &&
+               Wisdom == other.Wisdom &&
+               Charisma == other.Charisma;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is AbilityScore other && Equals(other);
+    }
+    
+    public override int GetHashCode()
+    {
+      return HashCode.Combine(Strength, Dexterity, Constitution, Intelligence,  Wisdom, Charisma);
+    }
+
     private static bool SetScore(int value, Action<int> setValue)
     {
         if (value <= 0) return false;
