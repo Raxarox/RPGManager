@@ -34,6 +34,7 @@ public static class GameRunner
                     CharacterEditor.Run(campaign);
                     break;
                 case "3":
+                    // Reload the saved campaign to create an independent snapshot.
                     savedCampaign= SaveCampaignMenu(campaign);
                     break;
                 case "4":
@@ -51,6 +52,8 @@ public static class GameRunner
                     break;
             }
         }
+        Console.WriteLine("Press any key to exit.");
+        Console.ReadKey();
     }
     
     private static void CreateCharacter(Campaign campaign)
@@ -138,7 +141,7 @@ public static class GameRunner
 
     private static bool ExitConfirmationMenu(Campaign campaign, Campaign? savedCampaign)
     {
-        if (!campaign.DiffersFrom(savedCampaign) || campaign.Characters.Count == 0) return true;
+        if (campaign.Equals(savedCampaign) || campaign.Characters.Count == 0) return true;
         Console.WriteLine("You haven't saved your current campaign. Are you sure you want to proceed?");
         return ConsolePrompts.ConfirmOperation();
     }

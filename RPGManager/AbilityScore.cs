@@ -32,19 +32,7 @@ public class AbilityScore: IEquatable<AbilityScore>
     public bool SetIntelligence(int value) => SetScore(value, score => Intelligence = score);
     public bool SetWisdom(int value) => SetScore(value, score => Wisdom = score);
     public bool SetCharisma(int value) => SetScore(value, score => Charisma = score);
-
-    public bool DiffersFrom(AbilityScore? otherAbilityScores)
-    {
-        if (otherAbilityScores == null) return true;
-
-        return Strength != otherAbilityScores.Strength ||
-               Dexterity != otherAbilityScores.Dexterity ||
-               Constitution != otherAbilityScores.Constitution ||
-               Intelligence != otherAbilityScores.Intelligence ||
-               Wisdom != otherAbilityScores.Wisdom ||
-               Charisma != otherAbilityScores.Charisma;
-    }
-
+    
     public bool Equals(AbilityScore? other)
     {
         if (other is null) return false;
