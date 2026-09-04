@@ -32,8 +32,7 @@ public class Character
         if (!SetMaxHealth(maxHealth))
             throw new JsonException("Invalid max health.");
 
-        if (!SetHealth(health))
-            throw new JsonException("Invalid health.");
+        SetHealth(health);
 
         AbilityScores = abilityScores ?? new AbilityScore();
     }
@@ -67,11 +66,7 @@ public class Character
             return false;
         }
 
-        if (!newCharacter.SetHealth(maxHealth))
-        {
-            errorMessage = "Health must be greater than zero.";
-            return false;
-        }
+        newCharacter.SetHealth(maxHealth);
 
         character = newCharacter;
         return true;
@@ -104,39 +99,39 @@ public class Character
             return false;
 
         MaxHealth = maxHealth;
+        // A character's current HP can never exceed their maximum HP.
         Health = Math.Min(Health, MaxHealth);
         return true;
     }
 
-    public bool SetHealth(int health)
+    public void SetHealth(int health)
     {
-        if (health <= 0)
-            return false;
-
-        Health = Math.Min(health, MaxHealth);
-        return true;
+        Health = Math.Clamp(health, 0, MaxHealth);
     }
 
-    public bool DiffersFrom(Character? otherCharacter)
+    public bool IsDown()
     {
-        if (otherCharacter == null) return true;
+        return Health <= 0;
+    }
+    
+    public bool Equals(Character? other)
+    {
+        if (other is null) return false;
 
-        foreach (var prop in typeof(Character).GetProperties())
-        {
-            //for future custom List<Object> properties:
-            if (prop.Name == nameof(AbilityScores))
-            {
-                if (AbilityScores.DiffersFrom(otherCharacter.AbilityScores)) return true;
-                continue;
-            }
+        return Name == other.Name &&
+               CharacterClass == other.CharacterClass &&
+               MaxHealth == other.MaxHealth &&
+               Health == other.Health &&
+               AbilityScores.Equals(other.AbilityScores);
+    }
 
-            //if (prop.Name == nameof(Inventory)) continue;
-            var thisValue = prop.GetValue(this);
-            var otherValue = prop.GetValue(otherCharacter);
-            if (!Equals(thisValue, otherValue)) return true;
-        }
-        //if (this.Inventory.HasChanges(other.Inventory)) return true;
-
-        return false;
+    public override bool Equals(object? obj)
+    {
+        return obj is Character other && Equals(other);
+    }
+    
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Name, CharacterClass, MaxHealth, Health, AbilityScores);
     }
 }
