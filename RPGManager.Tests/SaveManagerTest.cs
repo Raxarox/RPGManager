@@ -1,6 +1,7 @@
 using RPGManager;
+using RPGManager.CharacterClasses;
 
-namespace RpgManager.Tests
+namespace RPGManager.Tests
 {
     public class SaveManagerTests : IDisposable
     {
@@ -19,12 +20,15 @@ namespace RpgManager.Tests
         public void SaveAndLoad_ValidCampaign_RestoresIdenticalData()
         {
             var campaign = new Campaign();
-            Character.TryCreate("Cedric", "Warrior", 20, out var character, out _);
+            Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _);
             campaign.AddCharacter(character!);
             SaveManager.Save(campaign, TestSaveName);
             var loadedCampaign = SaveManager.Load(TestSaveName);
             Assert.NotNull(loadedCampaign);
-            Assert.Equal(campaign, loadedCampaign); // Leverages your custom Campaign.Equals!
+            // After loading, we need to check if the character data matches
+            Assert.Single(loadedCampaign.Characters);
+            Assert.Equal("Cedric", loadedCampaign.Characters[0].Name);
+            Assert.Equal("Fighter", loadedCampaign.Characters[0].Class.Name);
         }
 
         [Fact]

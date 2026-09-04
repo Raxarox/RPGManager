@@ -1,3 +1,5 @@
+using RPGManager.CharacterClasses;
+
 namespace RPGManager;
 
 public static class CharacterEditor
@@ -34,7 +36,7 @@ public static class CharacterEditor
     {
         var scores = character.AbilityScores;
         return character.Name + " - " +
-               character.CharacterClass + " - " +
+               character.Class.Name + " - " +
                character.MaxHealth + " Max HP - " +
                character.Health + " HP." +
                $"\nSTR: {scores.Strength} | DEX: {scores.Dexterity} | CON: {scores.Constitution} | " +
@@ -72,7 +74,7 @@ public static class CharacterEditor
             switch (input)
             {
                 case "1": EditName(character); close = true; break;
-                case "2": EditClass(character); close = true; break;
+                case "2": EditClass(character, campaign); close = true; break;
                 case "3": EditMaxHp(character); close = true; break;
                 case "4": EditAbilityScores(character); close = true; break;
                 case "5": close = true; break;
@@ -94,18 +96,33 @@ public static class CharacterEditor
         Console.WriteLine("Character's name changed to '" + character.Name + "' successfully");
     }
 
-    private static void EditClass(Character character)
+    private static void EditClass(Character character, Campaign campaign)
     {
-        Console.WriteLine("What would you like to change " + character.Name + "'s class to?" +
-                          "\n" + string.Join("\n", Character.ValidClasses));
-        string? input = Console.ReadLine();
-        while (input == null || !character.SetCharacterClass(input))
+        var classList = campaign.AvailableClasses.ToList();
+
+        Console.WriteLine($"What would you like to change {character.Name}'s class to?");
+        for (int i = 0; i < classList.Count; i++)
         {
-            Console.WriteLine("Please enter a valid class.");
-            input = Console.ReadLine();
+            Console.WriteLine($"{i + 1}. {classList[i].Name}");
+        }
+        CharacterClass? selectedClass = null;
+        while (selectedClass == null)
+        {
+            Console.Write("Enter the number of the new class: ");
+            string? input = Console.ReadLine();
+
+            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= classList.Count)
+            {
+                selectedClass = classList[choice - 1];
+            }
+            else
+            {
+                Console.WriteLine("Please enter a valid number from the list.");
+            }
         }
 
-        Console.WriteLine(character.Name + "'s class changed to '" + character.CharacterClass + "' successfully");
+        character.SetCharacterClass(selectedClass);
+        Console.WriteLine($"{character.Name}'s class has been updated to {character.Class.Name}.");
     }
 
     private static void EditMaxHp(Character character)
@@ -165,7 +182,7 @@ public static class CharacterEditor
             case "1":
                 return characters.OrderBy(c => c.Name).ToList();
             case "2":
-                return characters.OrderBy(c => c.CharacterClass).ToList();
+                return characters.OrderBy(c => c.Class.Name).ToList();
             case "3":
                 return characters.OrderBy(c => c.MaxHealth).ToList();
             case "4":

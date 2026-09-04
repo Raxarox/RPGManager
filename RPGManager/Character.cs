@@ -1,24 +1,26 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using RPGManager.CharacterClasses;
 namespace RPGManager;
 
 public class Character
 {
     public string Name { get; private set; } = string.Empty;
-    public string CharacterClass { get; private set;} = string.Empty;
-    public static readonly List<string> ValidClasses = ["Warrior", "Wizard", "Rogue"];
+    public CharacterClass Class { get; private set; } = null!;
     public AbilityScore AbilityScores { get; private set; } = new();
-    public int MaxHealth { get; private set;}
-    public int Health { get; private set;}
+    public int MaxHealth { get; private set; }
+    public int Health { get; private set; }
 
     private Character()
     {
+        Class = null!;
     }
+
     [JsonConstructor]
     public Character(
         string name,
-        string characterClass,
+        CharacterClass @class,
         int maxHealth,
         int health,
         AbilityScore? abilityScores = null)
@@ -26,7 +28,7 @@ public class Character
         if (!SetName(name))
             throw new JsonException("Invalid character name.");
 
-        if (!SetCharacterClass(characterClass))
+        if (!SetCharacterClass(@class))
             throw new JsonException("Invalid character class.");
 
         if (!SetMaxHealth(maxHealth))
@@ -36,9 +38,10 @@ public class Character
 
         AbilityScores = abilityScores ?? new AbilityScore();
     }
+
     public static bool TryCreate(
         string? name,
-        string? characterClass,
+        CharacterClass? characterClass,
         int maxHealth,
         [NotNullWhen(true)] out Character? character,
         out string errorMessage)
@@ -56,7 +59,7 @@ public class Character
 
         if (!newCharacter.SetCharacterClass(characterClass))
         {
-            errorMessage = $"Class must be one of: {string.Join(", ", ValidClasses)}.";
+            errorMessage = $"Class must be specified.";
             return false;
         }
 
@@ -81,15 +84,12 @@ public class Character
         return true;
     }
 
-    public bool SetCharacterClass(string? characterClass)
+    public bool SetCharacterClass(CharacterClass? newClass)
     {
-        var validClass = ValidClasses.FirstOrDefault(
-            c => string.Equals(c, characterClass, StringComparison.OrdinalIgnoreCase));
-
-        if (validClass == null)
+        if (newClass == null)
             return false;
 
-        CharacterClass = validClass;
+        Class = newClass;
         return true;
     }
 
@@ -113,13 +113,14 @@ public class Character
     {
         return Health <= 0;
     }
-    
+
     public bool Equals(Character? other)
     {
         if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
 
         return Name == other.Name &&
-               CharacterClass == other.CharacterClass &&
+               Class.Name == other.Class.Name &&
                MaxHealth == other.MaxHealth &&
                Health == other.Health &&
                AbilityScores.Equals(other.AbilityScores);
@@ -129,9 +130,9 @@ public class Character
     {
         return obj is Character other && Equals(other);
     }
-    
+
     public override int GetHashCode()
     {
-        return HashCode.Combine(Name, CharacterClass, MaxHealth, Health, AbilityScores);
+        return HashCode.Combine(Name, Class.Name, MaxHealth, Health, AbilityScores);
     }
 }

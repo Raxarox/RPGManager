@@ -1,25 +1,25 @@
+using RPGManager.CharacterClasses;
+
 namespace RPGManager.Tests;
 
 public class CharacterTest
 {
     [Theory]
-    [InlineData("Cedric", "Warrior",20, true)]
-    [InlineData("Cedric", "wArRior",20, true)]
-    [InlineData("", "Warrior",20, false)]
-    [InlineData("Cedric", "Netrunner",20, false)]
-    [InlineData("Cedric", "Warrior",-10, false)]
-    [InlineData("Cedric", "Warrior",0, false)]
-    public void TryCreate_ValidatesAndUpdatesState(string nameInput, string classInput, int maxHealth,  bool expectedSuccess)
+    [InlineData("Cedric", 20, true)]
+    [InlineData("", 20, false)]
+    [InlineData("Cedric", -10, false)]
+    [InlineData("Cedric", 0, false)]
+    public void TryCreate_ValidatesAndUpdatesState(string nameInput, int maxHealth, bool expectedSuccess)
     {
-        var success = Character.TryCreate(nameInput, classInput, maxHealth, out var character, out var message);
+        var testClass = new Fighter();
+        var success = Character.TryCreate(nameInput, testClass, maxHealth, out var character, out var message);
         Assert.Equal(expectedSuccess, success);
 
         if (expectedSuccess)
         {
             Assert.NotNull(character);
             Assert.Equal(nameInput, character.Name);
-            Assert.Equal(Character.ValidClasses.First(c => 
-                string.Equals(c, classInput, StringComparison.OrdinalIgnoreCase)), character.CharacterClass);
+            Assert.Equal("Fighter", character.Class.Name);
             Assert.Equal(string.Empty, message);
         }
         else
@@ -29,6 +29,15 @@ public class CharacterTest
         }
     }
 
+    [Fact]
+    public void TryCreate_NullClass_ReturnsFalse()
+    {
+        var success = Character.TryCreate("Cedric", null, 20, out var character, out var message);
+        Assert.False(success);
+        Assert.Null(character);
+        Assert.NotEmpty(message);
+    }
+
     [Theory]
     [InlineData("Roland", true)]
     [InlineData("", false)]
@@ -36,29 +45,30 @@ public class CharacterTest
     [InlineData(null, false)]
     public void SetName_ValidatesAndUpdatesState(string? nameInput, bool expectedSuccess)
     {
-        Assert.True(Character.TryCreate("Cedric", "Warrior", 20, out var character, out _));
+        Assert.True(Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _));
         var success = character.SetName(nameInput);
         Assert.Equal(expectedSuccess, success);
         if(expectedSuccess) Assert.Equal(character.Name, nameInput);
         else Assert.Equal("Cedric", character.Name);
     }    
     
-    [Theory]
-    [InlineData("Warrior", true)]
-    [InlineData("wiZarD", true)]
-    [InlineData("Netrunner", false)]
-    [InlineData("", false)]
-    [InlineData(" ", false)]
-    [InlineData(null, false)]
-    public void SetClass_ValidatesAndUpdatesState(string? classInput, bool expectedSuccess)
+    [Fact]
+    public void SetClass_ValidClass_UpdatesState()
     {
-        Assert.True(Character.TryCreate("Cedric", "Warrior", 20, out var character, out _));
-        var success = character.SetCharacterClass(classInput);
-        Assert.Equal(expectedSuccess, success);
-        if (expectedSuccess)
-            Assert.Equal(Character.ValidClasses.First(c =>
-                string.Equals(c, classInput, StringComparison.OrdinalIgnoreCase)), character.CharacterClass);
-        else Assert.Equal("Warrior", character.CharacterClass);
+        Assert.True(Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _));
+        var newClass = new Wizard();
+        var success = character.SetCharacterClass(newClass);
+        Assert.True(success);
+        Assert.Equal("Wizard", character.Class.Name);
+    }
+
+    [Fact]
+    public void SetClass_NullClass_ReturnsFalse()
+    {
+        Assert.True(Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _));
+        var success = character.SetCharacterClass(null);
+        Assert.False(success);
+        Assert.Equal("Fighter", character.Class.Name);
     }
 
     [Theory]
@@ -68,7 +78,7 @@ public class CharacterTest
     [InlineData(-20, false)]
     public void SetMaxHealth_ValidatesAndUpdatesState(int maxHealthInput, bool expectedSuccess)
     {
-        Assert.True(Character.TryCreate("Cedric", "Warrior", 20, out var character, out _));
+        Assert.True(Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _));
         var originalHealth = character.Health;
         var originalMaxHealth = character.MaxHealth;
         var success = character.SetMaxHealth(maxHealthInput);
@@ -96,7 +106,7 @@ public class CharacterTest
     [InlineData(-50, 0)]
     public void SetHealth_ValidatesAndUpdatesState(int healthInput, int expectedResult)
     {
-        Assert.True(Character.TryCreate("Cedric", "Warrior", 40, out var character, out _));
+        Assert.True(Character.TryCreate("Cedric", new Fighter(), 40, out var character, out _));
         character.SetHealth(healthInput);
         Assert.Equal(expectedResult, character.Health);
     }   
@@ -104,8 +114,9 @@ public class CharacterTest
     [Fact]
     public void Equals_SameValues_ReturnsTrueAndMatchesHashCodes()
     {
-        Character.TryCreate("Cedric", "Warrior", 20, out var char1, out _);
-        Character.TryCreate("Cedric", "Warrior", 20, out var char2, out _);
+        var fighterClass = new Fighter();
+        Character.TryCreate("Cedric", fighterClass, 20, out var char1, out _);
+        Character.TryCreate("Cedric", fighterClass, 20, out var char2, out _);
 
         Assert.True(char1!.Equals(char2));
         Assert.True(char2!.Equals(char1));
@@ -116,9 +127,11 @@ public class CharacterTest
     [Fact]
     public void Equals_DifferentValues_ReturnsFalse()
     {
-        Character.TryCreate("Cedric", "Warrior", 20, out var char1, out _);
-        Character.TryCreate("Roland", "Warrior", 20, out var char2, out _); // Different name
-        Character.TryCreate("Cedric", "Wizard", 20, out var char3, out _);  // Different class
+        var fighterClass = new Fighter();
+        var wizardClass = new Wizard();
+        Character.TryCreate("Cedric", fighterClass, 20, out var char1, out _);
+        Character.TryCreate("Roland", fighterClass, 20, out var char2, out _); // Different name
+        Character.TryCreate("Cedric", wizardClass, 20, out var char3, out _);  // Different class
 
         Assert.False(char1!.Equals(char2));
         Assert.False(char1.Equals(char3));
@@ -127,7 +140,7 @@ public class CharacterTest
     [Fact]
     public void Equals_NullOrWrongType_ReturnsFalse()
     {
-        Character.TryCreate("Cedric", "Warrior", 20, out var character, out _);
+        Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _);
 
         Assert.False(character!.Equals(null));
         Assert.False(character.Equals("NotACharacter"));

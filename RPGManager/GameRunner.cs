@@ -1,3 +1,5 @@
+using RPGManager.CharacterClasses;
+
 namespace RPGManager;
 
 public static class GameRunner
@@ -58,7 +60,13 @@ public static class GameRunner
     
     private static void CreateCharacter(Campaign campaign)
     {
-        var input = PromptForNewCharacterDetails();
+        var input = PromptForNewCharacterDetails(campaign);
+
+        if (string.IsNullOrWhiteSpace(input.Name) || input.CharacterClass == null)
+        {
+            Console.WriteLine("Could not create character: Name and class must be provided.");
+            return;
+        }
 
         if (!Character.TryCreate(
                 input.Name, input.CharacterClass, input.Hp,
@@ -69,20 +77,37 @@ public static class GameRunner
         }
 
         campaign.AddCharacter(character);
+        Console.WriteLine($"Successfully created {character.Name} the {character.Class.Name}!");
     }
 
-    private static (string? Name, string? CharacterClass, int Hp) PromptForNewCharacterDetails()
+    private static (string? Name, CharacterClass? CharacterClass, int Hp) PromptForNewCharacterDetails(Campaign campaign)
     {
         Console.WriteLine("What is the character's name?");
         var name = Console.ReadLine();
 
-        Console.WriteLine(
-            "What is the character's class?\n" +
-            string.Join("\n", Character.ValidClasses));
-        var characterClass = Console.ReadLine();
+        var classList = campaign.AvailableClasses.ToList();
+        Console.WriteLine("What is the character's class?");
+        for (int i = 0; i < classList.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {classList[i].Name}");
+        }
+
+        CharacterClass? selectedClass = null;
+        while (selectedClass == null)
+        {
+            Console.Write("Enter the number of the class: ");
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= classList.Count)
+            {
+                selectedClass = classList[choice - 1];
+            }
+            else
+            {
+                Console.WriteLine("Please enter a valid number from the list.");
+            }
+        }
 
         var hp = ConsolePrompts.GetPositiveIntegerFor("HP");
-        return (name, characterClass, hp);
+        return (name, selectedClass, hp);
     }
 
     private static Campaign SaveCampaignMenu(Campaign campaign)
