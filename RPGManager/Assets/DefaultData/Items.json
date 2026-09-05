@@ -1,0 +1,26 @@
+[
+  {
+    "$type": "Weapon",
+    "TemplateId": "longsword",
+    "Name": "Longsword",
+    "Weight": 3,
+    "ValueInCopper": 1500,
+    "Description": "A well-balanced blade favored by trained soldiers.",
+    "DamageDice": "1d8",
+    "DamageType": "Slashing",
+    "Category": "Martial",
+    "AttackType": "Melee",
+    "Handedness": "SingleHanded",
+    "IsLight": false
+  },
+  {
+    "$type": "Armor",
+    "TemplateId": "leather_armor",
+    "Name": "Leather Armor",
+    "Weight": 10,
+    "ValueInCopper": 1000,
+    "Description": "Basic light armor made of tough, layered leather.",
+    "ArmorClassBonus": 1,
+    "ArmorType": "Light"
+  }
+]

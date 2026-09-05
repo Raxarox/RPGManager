@@ -1,4 +1,4 @@
-namespace RPGManager;
+namespace RPGManager.UI;
 
 public static class ConsolePrompts
 {

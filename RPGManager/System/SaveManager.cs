@@ -1,5 +1,7 @@
 using System.Text.Json;
-namespace RPGManager;
+using RPGManager.GameData.Campaigns;
+
+namespace RPGManager.System;
 
 public static class SaveManager
 {

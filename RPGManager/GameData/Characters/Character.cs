@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using RPGManager.CharacterClasses;
-namespace RPGManager;
+
+namespace RPGManager.GameData.Characters;
 
 public class Character
 {

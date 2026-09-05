@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace RPGManager;
+namespace RPGManager.GameData.Characters;
 
 public class AbilityScore: IEquatable<AbilityScore>
 {

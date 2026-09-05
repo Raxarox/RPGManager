@@ -1,0 +1,10 @@
+[
+  {
+    "ClassId": "fighter",
+    "Name": "Fighter",
+    "HitDieValue": 10,
+    "IsSpellcaster": false,
+    "WeaponProficiencies": ["Simple", "Martial"],
+    "ArmorProficiencies": ["Light", "Medium", "Heavy", "Shield"]
+  }
+]

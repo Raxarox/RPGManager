@@ -1,12 +1,16 @@
-using RPGManager.CharacterClasses;
+using RPGManager.GameData.Campaigns;
+using RPGManager.GameData.Characters;
+using RPGManager.GameData.Items;
+using RPGManager.System;
 
-namespace RPGManager;
+namespace RPGManager.UI;
 
 public static class GameRunner
 {
-    public static void RunGame()
+    public static void RunGame(GameAssetRegistry  assetRegistry)
     {
         Campaign campaign = new Campaign();
+        campaign.EnableAllClasses(assetRegistry.Classes.Keys);
         var exit = false;
         Campaign savedCampaign = new Campaign();
         while (!exit)
@@ -25,7 +29,7 @@ public static class GameRunner
             switch (mainMenuInput)
             {
                 case "1":
-                    CreateCharacter(campaign);
+                    CreateCharacter(campaign, assetRegistry);
                     break;
                 case "2":
                     if (campaign.Characters.Count == 0)
@@ -33,7 +37,7 @@ public static class GameRunner
                         Console.WriteLine("Please create a character first.");
                         break;
                     }
-                    CharacterEditor.Run(campaign);
+                    CharacterEditor.Run(campaign, assetRegistry);
                     break;
                 case "3":
                     // Reload the saved campaign to create an independent snapshot.
@@ -58,9 +62,9 @@ public static class GameRunner
         Console.ReadKey();
     }
     
-    private static void CreateCharacter(Campaign campaign)
+    private static void CreateCharacter(Campaign campaign, GameAssetRegistry assetRegistry)
     {
-        var input = PromptForNewCharacterDetails(campaign);
+        var input = PromptForNewCharacterDetails(campaign, assetRegistry.Classes);
 
         if (string.IsNullOrWhiteSpace(input.Name) || input.CharacterClass == null)
         {
@@ -80,25 +84,35 @@ public static class GameRunner
         Console.WriteLine($"Successfully created {character.Name} the {character.Class.Name}!");
     }
 
-    private static (string? Name, CharacterClass? CharacterClass, int Hp) PromptForNewCharacterDetails(Campaign campaign)
+    private static (string? Name, CharacterClass? CharacterClass, int Hp) PromptForNewCharacterDetails(
+        Campaign campaign, IReadOnlyDictionary<string, CharacterClass> masterClassRegistry)
     {
         Console.WriteLine("What is the character's name?");
         var name = Console.ReadLine();
 
-        var classList = campaign.AvailableClasses.ToList();
+        var classIds = campaign.AvailableClasses;
         Console.WriteLine("What is the character's class?");
-        for (int i = 0; i < classList.Count; i++)
+        for (int i = 0; i < classIds.Count; i++)
         {
-            Console.WriteLine($"{i + 1}. {classList[i].Name}");
+            Console.WriteLine($"{i + 1}. {classIds[i]}");
         }
 
         CharacterClass? selectedClass = null;
         while (selectedClass == null)
         {
             Console.Write("Enter the number of the class: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= classList.Count)
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= classIds.Count)
             {
-                selectedClass = classList[choice - 1];
+                string selectedId = classIds[choice - 1];
+
+                if (masterClassRegistry.TryGetValue(selectedId, out var foundClass))
+                {
+                    selectedClass = foundClass;
+                }
+                else
+                {
+                    Console.WriteLine($"Error: The class definition for '{selectedId}' could not be found in the registry.");
+                }
             }
             else
             {

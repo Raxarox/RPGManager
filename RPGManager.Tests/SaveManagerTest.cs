@@ -1,10 +1,14 @@
 using RPGManager;
-using RPGManager.CharacterClasses;
+using RPGManager.GameData.Campaigns;
+using RPGManager.GameData.Characters;
+using RPGManager.System;
 
 namespace RPGManager.Tests
 {
     public class SaveManagerTests : IDisposable
     {
+        CharacterClass testClass = new ("Fighter", "Fighter", 10, false, [], []);
+
         private const string TestSaveName = "test_campaign_temp";
 
         public void Dispose()
@@ -20,7 +24,7 @@ namespace RPGManager.Tests
         public void SaveAndLoad_ValidCampaign_RestoresIdenticalData()
         {
             var campaign = new Campaign();
-            Character.TryCreate("Cedric", new Fighter(), 20, out var character, out _);
+            Character.TryCreate("Cedric", testClass, 20, out var character, out _);
             campaign.AddCharacter(character!);
             SaveManager.Save(campaign, TestSaveName);
             var loadedCampaign = SaveManager.Load(TestSaveName);

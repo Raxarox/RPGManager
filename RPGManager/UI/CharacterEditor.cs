@@ -1,10 +1,12 @@
-using RPGManager.CharacterClasses;
+using RPGManager.GameData.Campaigns;
+using RPGManager.GameData.Characters;
+using RPGManager.System;
 
-namespace RPGManager;
+namespace RPGManager.UI;
 
 public static class CharacterEditor
 {
-    public static void Run(Campaign campaign)
+    public static void Run(Campaign campaign, GameAssetRegistry  assetRegistry)
     {
         var exit = false;
         while (!exit && campaign.Characters.Count > 0)
@@ -17,7 +19,7 @@ public static class CharacterEditor
             switch (editMenuInput)
             {
                 case "1":
-                    EditCharacter(campaign);
+                    EditCharacter(campaign, assetRegistry);
                     break;
                 case "2":
                     RemoveCharacter(campaign);
@@ -54,7 +56,7 @@ public static class CharacterEditor
         if (ConsolePrompts.ConfirmOperation()) campaign.RemoveCharacter(character);
     }
 
-    private static void EditCharacter(Campaign campaign)
+    private static void EditCharacter(Campaign campaign, GameAssetRegistry  assetRegistry)
     {
         var character = SelectCharacter(campaign,
             "Which character would you like to edit? Please enter the character's ID");
@@ -74,7 +76,7 @@ public static class CharacterEditor
             switch (input)
             {
                 case "1": EditName(character); close = true; break;
-                case "2": EditClass(character, campaign); close = true; break;
+                case "2": EditClass(character, campaign, assetRegistry.Classes); close = true; break;
                 case "3": EditMaxHp(character); close = true; break;
                 case "4": EditAbilityScores(character); close = true; break;
                 case "5": close = true; break;
@@ -96,15 +98,17 @@ public static class CharacterEditor
         Console.WriteLine("Character's name changed to '" + character.Name + "' successfully");
     }
 
-    private static void EditClass(Character character, Campaign campaign)
+    private static void EditClass(Character character, Campaign campaign, IReadOnlyDictionary<string, CharacterClass> masterClassRegistry)
     {
-        var classList = campaign.AvailableClasses.ToList();
+        var classList = campaign.AvailableClasses;
 
         Console.WriteLine($"What would you like to change {character.Name}'s class to?");
         for (int i = 0; i < classList.Count; i++)
         {
-            Console.WriteLine($"{i + 1}. {classList[i].Name}");
+            // If you want it to look pretty (e.g., capitalizing the ID), you can format it here
+            Console.WriteLine($"{i + 1}. {classList[i]}");
         }
+    
         CharacterClass? selectedClass = null;
         while (selectedClass == null)
         {
@@ -113,7 +117,16 @@ public static class CharacterEditor
 
             if (int.TryParse(input, out int choice) && choice >= 1 && choice <= classList.Count)
             {
-                selectedClass = classList[choice - 1];
+                string selectedId = classList[choice - 1];
+
+                if (masterClassRegistry.TryGetValue(selectedId, out var foundClass))
+                {
+                    selectedClass = foundClass;
+                }
+                else
+                {
+                    Console.WriteLine($"Error: The class definition for '{selectedId}' could not be found in the registry.");
+                }
             }
             else
             {
