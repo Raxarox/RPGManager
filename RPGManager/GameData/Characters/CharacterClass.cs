@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using RPGManager.System;
 
 namespace RPGManager.GameData.Characters;
 
@@ -17,13 +18,10 @@ public class CharacterClass
         string name,
         int hitDieValue,
         bool isSpellcaster,
-        List<string> weaponProficiencies,
-        List<string> armorProficiencies)
+        List<string>? weaponProficiencies,
+        List<string>? armorProficiencies)
     {
-        if (hitDieValue <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(hitDieValue), $"Class '{name}' must have a valid positive hit die value.");
-        }
+        ValidationHelper.ValidatePositiveInteger(name, "Class", nameof(hitDieValue), hitDieValue);
 
         ClassId = classId ?? throw new ArgumentNullException(nameof(classId));
         Name = name ?? throw new ArgumentNullException(nameof(name));

@@ -1,5 +1,4 @@
 ﻿using RPGManager.GameData.Characters;
-using Xunit;
 
 namespace RPGManager.Tests;
 

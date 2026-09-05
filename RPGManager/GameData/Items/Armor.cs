@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using RPGManager.System;
 
 namespace RPGManager.GameData.Items;
 
@@ -26,10 +27,7 @@ public class Armor : Item
         ArmorType armorType)
         : base(templateId, name, weight, valueInCopper, description)
     {
-        if (armorClassBonus < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(armorClassBonus), $"Armor '{name}' cannot have a negative Armor Class bonus.");
-        }
+        ValidationHelper.ValidatePositiveValue(name, "Armor", nameof(armorClassBonus), armorClassBonus);
 
         ArmorClassBonus = armorClassBonus;
         ArmorType = armorType;

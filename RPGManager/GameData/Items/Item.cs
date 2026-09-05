@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using RPGManager.System;
 
 namespace RPGManager.GameData.Items;
 
@@ -14,17 +15,10 @@ public abstract class Item
     public string Description { get; init; }
 
     [JsonConstructor]
-    protected Item(string templateId, string name, decimal weight, int valueInCopper, string description)
+    protected Item(string templateId, string name, decimal weight, int valueInCopper, string? description)
     {
-        if (weight < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(weight), $"Item '{name}' cannot have a negative weight.");
-        }
-        
-        if (valueInCopper < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(valueInCopper), $"Item '{name}' cannot have a negative value.");
-        }
+        ValidationHelper.ValidatePositiveValue(name, "Item", nameof(weight), weight);
+        ValidationHelper.ValidatePositiveValue(name, "Item", nameof(valueInCopper), valueInCopper);
 
         TemplateId = templateId ?? throw new ArgumentNullException(nameof(templateId));
         Name = name ?? throw new ArgumentNullException(nameof(name));

@@ -22,7 +22,7 @@ public class Campaign
     }
 
     [JsonConstructor]
-    public Campaign(string campaignName, List<Character> characters, List<string> availableClasses)
+    public Campaign(string? campaignName, List<Character>? characters, List<string>? availableClasses)
     {
         CampaignName = campaignName ?? "Default Campaign";
         Characters = characters ?? [];

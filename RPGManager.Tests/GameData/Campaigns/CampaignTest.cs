@@ -5,8 +5,8 @@ namespace RPGManager.Tests;
 
 public class CampaignTest
 {
-    CharacterClass testClass2 = new ("Wizard", "Wizard", 6, true, [], []);
-    CharacterClass testClass = new ("Fighter", "Fighter", 10, false, [], []);
+    private readonly CharacterClass _testClass2 = new ("Wizard", "Wizard", 6, true, [], []);
+    private readonly CharacterClass _testClass = new ("Fighter", "Fighter", 10, false, [], []);
 
     [Fact]
     public void Campaign_DefaultListsShouldBeEmpty()
@@ -19,7 +19,7 @@ public class CampaignTest
     public void AddCharacter_ValidCharacter_AddsToList()
     {
         var campaign = new Campaign();
-        Character.TryCreate("Cedric", testClass, 20, out var character, out _);
+        Character.TryCreate("Cedric", _testClass, 20, out var character, out _);
         campaign.AddCharacter(character!);
         Assert.Single(campaign.Characters);
         Assert.Contains(character, campaign.Characters);
@@ -36,7 +36,7 @@ public class CampaignTest
     public void RemoveCharacter_ValidCharacter_RemovesFromList()
     {
         var campaign = new Campaign();
-        Character.TryCreate("Cedric", testClass, 20, out var character, out _);
+        Character.TryCreate("Cedric", _testClass, 20, out var character, out _);
         campaign.AddCharacter(character!);
         campaign.RemoveCharacter(character!);
         Assert.Empty(campaign.Characters);
@@ -53,7 +53,7 @@ public class CampaignTest
     public void RemoveCharacter_CharacterNotInList_DoesNotThrowAndListRemainsEmpty()
     {
         var campaign = new Campaign();
-        Character.TryCreate("Cedric", testClass, 20, out var character, out _);
+        Character.TryCreate("Cedric", _testClass, 20, out var character, out _);
         campaign.RemoveCharacter(character!);
         Assert.Empty(campaign.Characters);
     }
@@ -64,8 +64,8 @@ public class CampaignTest
         var campaign1 = new Campaign();
         var campaign2 = new Campaign();
 
-        Character.TryCreate("Cedric", testClass, 20, out var c1, out _);
-        Character.TryCreate("Roland", testClass2, 30, out var c2, out _);
+        Character.TryCreate("Cedric", _testClass, 20, out var c1, out _);
+        Character.TryCreate("Roland", _testClass2, 30, out var c2, out _);
 
         campaign1.AddCharacter(c1!);
         campaign1.AddCharacter(c2!);
@@ -86,8 +86,8 @@ public class CampaignTest
         var campaign1 = new Campaign();
         var campaign2 = new Campaign();
 
-        Character.TryCreate("Cedric", testClass, 20, out var c1, out _);
-        Character.TryCreate("Roland", testClass2, 30, out var c2, out _);
+        Character.TryCreate("Cedric", _testClass, 20, out var c1, out _);
+        Character.TryCreate("Roland", _testClass2, 30, out var c2, out _);
 
         campaign1.AddCharacter(c1!);
         campaign1.AddCharacter(c2!);

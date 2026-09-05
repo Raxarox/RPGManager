@@ -15,101 +15,55 @@ public static class AssetLoader
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public static IReadOnlyDictionary<string, CharacterClass> LoadClasses(string directoryPath)
+    public static IReadOnlyDictionary<string, CharacterClass> LoadClasses(string directoryPath) =>
+        LoadAssets<CharacterClass>(directoryPath, "Classes.json", c => c.ClassId, "Class");
+
+    public static IReadOnlyDictionary<string, Item> LoadItems(string directoryPath) =>
+        LoadAssets<Item>(directoryPath, "Items.json", i => i.TemplateId, "Item");
+
+    private static IReadOnlyDictionary<string, T> LoadAssets<T>(
+        string directoryPath,
+        string embeddedFileName,
+        Func<T, string> getId,
+        string assetType)
     {
-        var classes = new Dictionary<string, CharacterClass>(StringComparer.OrdinalIgnoreCase);
+        var assets = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
 
         try
         {
-            EnsureDataFilesExist<CharacterClass>(
-                directoryPath, "Classes.json", c => c.ClassId);
+            EnsureDataFilesExist<T>(directoryPath, embeddedFileName, getId);
 
             if (!Directory.Exists(directoryPath))
-            {
-                return classes; // Return empty registry if directory doesn't exist yet
-            }
+                return assets;
 
-            var files = Directory.GetFiles(directoryPath, "*.json");
-            foreach (var filePath in files)
+            foreach (var filePath in Directory.GetFiles(directoryPath, "*.json"))
             {
                 var json = File.ReadAllText(filePath);
-                var characterClass = JsonSerializer.Deserialize<CharacterClass>(json, JsonOptions)
-                                     ?? throw new InvalidOperationException($"Class file '{filePath}' was empty.");
+                var asset = JsonSerializer.Deserialize<T>(json, JsonOptions)
+                           ?? throw new InvalidOperationException($"{assetType} file '{filePath}' was empty.");
 
-                if (string.IsNullOrWhiteSpace(characterClass.ClassId))
-                {
-                    throw new InvalidOperationException($"Class file '{filePath}' is missing a valid 'ClassId'.");
-                }
+                var id = getId(asset);
+                if (string.IsNullOrWhiteSpace(id))
+                    throw new InvalidOperationException($"{assetType} file '{filePath}' is missing a valid ID.");
 
-                if (!classes.TryAdd(characterClass.ClassId, characterClass))
-                {
-                    throw new InvalidOperationException($"Duplicate class ID found: '{characterClass.ClassId}'.");
-                }
+                if (!assets.TryAdd(id, asset))
+                    throw new InvalidOperationException($"Duplicate {assetType.ToLower()} ID found: '{id}'.");
             }
         }
         catch (UnauthorizedAccessException)
         {
-            throw new InvalidOperationException(
-                $"Permission denied while reading class assets from '{directoryPath}'.");
+            throw new InvalidOperationException($"Permission denied while reading {assetType.ToLower()} assets from '{directoryPath}'.");
         }
         catch (JsonException ex)
         {
-            throw new InvalidOperationException($"Failed to parse class JSON asset: {ex.Message}", ex);
+            throw new InvalidOperationException($"Failed to parse {assetType.ToLower()} JSON asset: {ex.Message}", ex);
         }
         catch (IOException ex)
         {
-            throw new InvalidOperationException($"Disk error while reading class assets: {ex.Message}", ex);
+            throw new InvalidOperationException($"Disk error while reading {assetType.ToLower()} assets: {ex.Message}", ex);
         }
 
-        return classes;
-    }
-
-    public static IReadOnlyDictionary<string, Item> LoadItems(string directoryPath)
-    {
-        var items = new Dictionary<string, Item>(StringComparer.OrdinalIgnoreCase);
-
-        try
-        {
-            EnsureDataFilesExist<Item>(directoryPath, "Items.json", i => i.TemplateId);
-
-            if (!Directory.Exists(directoryPath))
-            {
-                return items;
-            }
-
-            var files = Directory.GetFiles(directoryPath, "*.json");
-            foreach (var filePath in files)
-            {
-                var json = File.ReadAllText(filePath);
-                // System.Text.Json automatically handles polymorphism thanks to [JsonDerivedType] on Item.cs
-                var item = JsonSerializer.Deserialize<Item>(json, JsonOptions)
-                           ?? throw new InvalidOperationException($"Item file '{filePath}' was empty.");
-
-                if (string.IsNullOrWhiteSpace(item.TemplateId))
-                {
-                    throw new InvalidOperationException($"Item file '{filePath}' is missing a valid 'TemplateId'.");
-                }
-
-                if (!items.TryAdd(item.TemplateId, item))
-                {
-                    throw new InvalidOperationException($"Duplicate item template ID found: '{item.TemplateId}'.");
-                }
-            }
-        }
-        catch (UnauthorizedAccessException)
-        {
-            throw new InvalidOperationException($"Permission denied while reading item assets from '{directoryPath}'.");
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException($"Failed to parse item JSON asset: {ex.Message}", ex);
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"Disk error while reading item assets: {ex.Message}", ex);
-        }
-
-        return items;
+        return assets;
     }
 
     // If directoryPath is missing or has no .json files (fresh install, or the

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using RPGManager.System;
 
 namespace RPGManager.GameData.Items;
 
@@ -54,20 +55,9 @@ public class Weapon : Item
         string? versatileDamageDice = null)
         : base(templateId, name, weight, valueInCopper, description)
     {
-        if (isLight && handedness != WeaponHandedness.SingleHanded)
-        {
-            throw new ArgumentException($"Weapon '{name}' cannot be light because it is not single-handed.");
-        }
-
-        if (isVersatile && handedness != WeaponHandedness.SingleHanded)
-        {
-            throw new ArgumentException($"Weapon '{name}' cannot be versatile because it is not single-handed.");
-        }
-        
-        if (string.IsNullOrWhiteSpace(damageDice))
-        {
-            throw new ArgumentException($"Weapon '{name}' must have valid damage dice.", nameof(damageDice));
-        }
+        ValidateSingleHandedRequirement(name, isLight, handedness, "light");
+        ValidateSingleHandedRequirement(name, isVersatile, handedness, "versatile");
+        ValidationHelper.ValidateRequiredString(name, "Weapon", nameof(damageDice), damageDice);
 
         DamageDice = damageDice;
         DamageType = damageType ?? DamageTypes.Slashing;
@@ -80,5 +70,13 @@ public class Weapon : Item
         IsThrown = isThrown;
         IsVersatile = isVersatile;
         VersatileDamageDice = versatileDamageDice;
+    }
+
+    private static void ValidateSingleHandedRequirement(string name, bool requiresSingleHanded, WeaponHandedness handedness, string propertyName)
+    {
+        if (requiresSingleHanded && handedness != WeaponHandedness.SingleHanded)
+        {
+            throw new ArgumentException($"Weapon '{name}' cannot be {propertyName} because it is not single-handed.");
+        }
     }
 }
