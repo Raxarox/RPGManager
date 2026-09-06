@@ -21,6 +21,9 @@ public static class AssetLoader
     public static IReadOnlyDictionary<string, Item> LoadItems(string directoryPath) =>
         LoadAssets<Item>(directoryPath, "Items.json", i => i.TemplateId, "Item");
 
+    public static IReadOnlyDictionary<string, Archetype> LoadArchetypes(string directoryPath) =>
+        LoadAssets<Archetype>(directoryPath, "Archetypes.json", a => a.ArchetypeId, "Archetype");
+
     private static IReadOnlyDictionary<string, T> LoadAssets<T>(
         string directoryPath,
         string embeddedFileName,
