@@ -10,6 +10,7 @@
     <ItemGroup>
         <EmbeddedResource Include="Assets\DefaultData\Classes.json" />
         <EmbeddedResource Include="Assets\DefaultData\Items.json" />
+        <EmbeddedResource Include="Assets\DefaultData\Archetypes.json" />
     </ItemGroup>
 
 </Project>
