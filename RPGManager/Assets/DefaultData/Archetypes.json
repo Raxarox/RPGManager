@@ -1,0 +1,54 @@
+[
+  {
+    "ArchetypeId": "champion",
+    "Name": "Champion",
+    "ParentClassId": "fighter",
+    "Progression": [
+      {
+        "Level": 3,
+        "ProficiencyBonus": 0,
+        "ClassFeatures": [
+          "Improved Critical"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 7,
+        "ProficiencyBonus": 0,
+        "ClassFeatures": [
+          "Remarkable Athlete"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 10,
+        "ProficiencyBonus": 0,
+        "ClassFeatures": [
+          "Additional Fighting Style"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 15,
+        "ProficiencyBonus": 0,
+        "ClassFeatures": [
+          "Superior Critical"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 18,
+        "ProficiencyBonus": 0,
+        "ClassFeatures": [
+          "Survivor"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      }
+    ]
+  }
+]

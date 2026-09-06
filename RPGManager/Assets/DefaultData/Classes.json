@@ -3,8 +3,229 @@
     "ClassId": "fighter",
     "Name": "Fighter",
     "HitDieValue": 10,
-    "IsSpellcaster": false,
-    "WeaponProficiencies": ["Simple", "Martial"],
-    "ArmorProficiencies": ["Light", "Medium", "Heavy", "Shield"]
+    "WeaponProficiencies": [
+      "Simple weapons",
+      "Martial weapons"
+    ],
+    "ArmorProficiencies": [
+      "Light",
+      "Medium",
+      "Heavy",
+      "Shields"
+    ],
+    "AvailableArchetypeIds": [
+      "champion"
+    ],
+    "ArchetypeChoiceLevel": 3,
+    "Progression": [
+      {
+        "Level": 1,
+        "ProficiencyBonus": 2,
+        "ClassFeatures": [
+          "Fighting Style",
+          "Second Wind"
+        ],
+        "FeatureChoices": [
+          {
+            "FeatureId": "fighting_style",
+            "RequiredSelectionCount": 1
+          }
+        ],
+        "ResourcePools": {
+          "SecondWind": 1
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 2,
+        "ProficiencyBonus": 2,
+        "ClassFeatures": [
+          "Action Surge"
+        ],
+        "ResourcePools": {
+          "ActionSurge": 1
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 3,
+        "ProficiencyBonus": 2,
+        "ClassFeatures": [
+          "Martial Archetype"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 4,
+        "ProficiencyBonus": 2,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 5,
+        "ProficiencyBonus": 3,
+        "ClassFeatures": [
+          "Extra Attack (1)"
+        ],
+        "ResourcePools": {
+          "ExtraAttack": 1
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 6,
+        "ProficiencyBonus": 3,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 7,
+        "ProficiencyBonus": 3,
+        "ClassFeatures": [
+          "Indomitable",
+          "Martial Archetype feature"
+        ],
+        "ResourcePools": {
+          "Indomitable": 1
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 8,
+        "ProficiencyBonus": 3,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 9,
+        "ProficiencyBonus": 4,
+        "ClassFeatures": [
+          "Indomitable (2 uses)"
+        ],
+        "ResourcePools": {
+          "Indomitable": 2
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 10,
+        "ProficiencyBonus": 4,
+        "ClassFeatures": [
+          "Martial Archetype feature"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 11,
+        "ProficiencyBonus": 4,
+        "ClassFeatures": [
+          "Extra Attack (2)"
+        ],
+        "ResourcePools": {
+          "ExtraAttack": 2
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 12,
+        "ProficiencyBonus": 4,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 13,
+        "ProficiencyBonus": 5,
+        "ClassFeatures": [
+          "Indomitable (3 uses)"
+        ],
+        "ResourcePools": {
+          "Indomitable": 3
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 14,
+        "ProficiencyBonus": 5,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 15,
+        "ProficiencyBonus": 5,
+        "ClassFeatures": [
+          "Martial Archetype feature"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 16,
+        "ProficiencyBonus": 5,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 17,
+        "ProficiencyBonus": 6,
+        "ClassFeatures": [
+          "Action Surge (2 uses)",
+          "Indomitable (4 uses)"
+        ],
+        "ResourcePools": {
+          "ActionSurge": 2,
+          "Indomitable": 4
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 18,
+        "ProficiencyBonus": 6,
+        "ClassFeatures": [
+          "Martial Archetype feature"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 19,
+        "ProficiencyBonus": 6,
+        "ClassFeatures": [
+          "Ability Score Improvement"
+        ],
+        "ResourcePools": {},
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "Level": 20,
+        "ProficiencyBonus": 6,
+        "ClassFeatures": [
+          "Extra Attack (3)"
+        ],
+        "ResourcePools": {
+          "ExtraAttack": 3
+        },
+        "SpellSlots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      }
+    ]
   }
 ]
