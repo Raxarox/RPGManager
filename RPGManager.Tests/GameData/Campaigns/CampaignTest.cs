@@ -5,8 +5,8 @@ namespace RPGManager.Tests;
 
 public class CampaignTest
 {
-    private readonly CharacterClass _testClass2 = new ("Wizard", "Wizard", 6, true, [], []);
-    private readonly CharacterClass _testClass = new ("Fighter", "Fighter", 10, false, [], []);
+    private readonly CharacterClass _testClass2 = new ("Wizard", "Wizard", 6, [], [], [], [], 0);
+    private readonly CharacterClass _testClass = new ("Fighter", "Fighter", 10, [], [], [], [], 0);
 
     [Fact]
     public void Campaign_DefaultListsShouldBeEmpty()
@@ -31,7 +31,7 @@ public class CampaignTest
         var campaign = new Campaign();
         Assert.Throws<ArgumentNullException>(() => campaign.AddCharacter(null!));
     }
-    
+
     [Fact]
     public void RemoveCharacter_ValidCharacter_RemovesFromList()
     {
@@ -42,7 +42,7 @@ public class CampaignTest
         Assert.Empty(campaign.Characters);
         Assert.DoesNotContain(character, campaign.Characters);
     }
-    
+
     [Fact]
     public void RemoveCharacter_NullCharacter_ThrowsArgumentNullException()
     {
@@ -57,7 +57,7 @@ public class CampaignTest
         campaign.RemoveCharacter(character!);
         Assert.Empty(campaign.Characters);
     }
-    
+
     [Fact]
     public void Equals_SameCharactersInOrder_ReturnsTrueAndMatchesHashCodes()
     {

@@ -4,8 +4,9 @@ namespace RPGManager.Tests;
 
 public class CharacterTest
 {
-    private readonly CharacterClass _testClass2 = new ("Wizard", "Wizard", 6, true, [], []);
-    private readonly CharacterClass _testClass = new ("Fighter", "Fighter", 10, false, [], []);
+    private readonly CharacterClass _testClass2 = new ("Wizard", "Wizard", 6, [], [], [], [], 0);
+    private readonly CharacterClass _testClass = new ("Fighter", "Fighter", 10, [], [], [], [], 0);
+
     [Theory]
     [InlineData("Cedric", 20, true)]
     [InlineData("", 20, false)]
@@ -13,7 +14,6 @@ public class CharacterTest
     [InlineData("Cedric", 0, false)]
     public void TryCreate_ValidatesAndUpdatesState(string nameInput, int maxHealth, bool expectedSuccess)
     {
-        
         var success = Character.TryCreate(nameInput, _testClass, maxHealth, out var character, out var message);
         Assert.Equal(expectedSuccess, success);
 
@@ -21,7 +21,8 @@ public class CharacterTest
         {
             Assert.NotNull(character);
             Assert.Equal(nameInput, character.Name);
-            Assert.Equal("Fighter", character.Class.Name);
+            Assert.Single(character.Classes);
+            Assert.Equal("Fighter", character.Classes[0].ClassAsset?.Name);
             Assert.Equal(string.Empty, message);
         }
         else
@@ -52,24 +53,6 @@ public class CharacterTest
         Assert.Equal(expectedSuccess, success);
         if(expectedSuccess) Assert.Equal(character.Name, nameInput);
         else Assert.Equal("Cedric", character.Name);
-    }    
-    
-    [Fact]
-    public void SetClass_ValidClass_UpdatesState()
-    {
-        Assert.True(Character.TryCreate("Cedric", _testClass, 20, out var character, out _));
-        var success = character.SetCharacterClass(_testClass2);
-        Assert.True(success);
-        Assert.Equal("Wizard", character.Class.Name);
-    }
-
-    [Fact]
-    public void SetClass_NullClass_ReturnsFalse()
-    {
-        Assert.True(Character.TryCreate("Cedric", _testClass, 20, out var character, out _));
-        var success = character.SetCharacterClass(null);
-        Assert.False(success);
-        Assert.Equal("Fighter", character.Class.Name);
     }
 
     [Theory]
@@ -98,8 +81,8 @@ public class CharacterTest
             Assert.Equal(originalMaxHealth, character.MaxHealth);
             Assert.Equal(originalHealth, character.Health);
         }
-    }  
-    
+    }
+
     [Theory]
     [InlineData(30, 30 )]
     [InlineData(50, 40)]
@@ -110,8 +93,56 @@ public class CharacterTest
         Assert.True(Character.TryCreate("Cedric", _testClass, 40, out var character, out _));
         character.SetHealth(healthInput);
         Assert.Equal(expectedResult, character.Health);
-    }   
-    
+    }
+
+    [Fact]
+    public void LevelUp_ExistingClass_IncreasesLevel()
+    {
+        Assert.True(Character.TryCreate("Cedric", _testClass, 20, out var character, out _));
+        var originalLevel = character.Classes[0].Level;
+        var originalMaxHealth = character.MaxHealth;
+
+        character.LevelUp(_testClass, 5); // Hit die roll + Con
+
+        Assert.Equal(originalLevel + 1, character.Classes[0].Level);
+        Assert.True(character.MaxHealth > originalMaxHealth);
+    }
+
+    [Fact]
+    public void LevelUp_NewClass_AddsMulticlass()
+    {
+        Assert.True(Character.TryCreate("Cedric", _testClass, 20, out var character, out _));
+        var originalClassCount = character.Classes.Count;
+
+        character.LevelUp(_testClass2, 3); // Hit die roll + Con
+
+        Assert.Equal(originalClassCount + 1, character.Classes.Count);
+        Assert.Contains(character.Classes, c => c.ClassAsset?.Name == "Wizard");
+    }
+
+    [Fact]
+    public void TotalLevel_SumsAllClassLevels()
+    {
+        Assert.True(Character.TryCreate("Cedric", _testClass, 20, out var character, out _));
+        character.LevelUp(_testClass, 4);
+        character.LevelUp(_testClass2, 3);
+
+        Assert.Equal(3, character.TotalLevel); // 1 (initial) + 1 (level up) + 1 (multiclass)
+    }
+
+    [Fact]
+    public void SetInitialClass_ReplacesExistingClasses()
+    {
+        Assert.True(Character.TryCreate("Cedric", _testClass, 20, out var character, out _));
+        character.LevelUp(_testClass2, 3);
+
+        character.SetInitialClass(_testClass);
+
+        Assert.Single(character.Classes);
+        Assert.Equal("Fighter", character.Classes[0].ClassAsset?.Name);
+        Assert.Equal(1, character.Classes[0].Level);
+    }
+
     [Fact]
     public void Equals_SameValues_ReturnsTrueAndMatchesHashCodes()
     {

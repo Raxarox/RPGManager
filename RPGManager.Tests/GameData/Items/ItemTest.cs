@@ -1,6 +1,6 @@
 using RPGManager.GameData.Items;
 
-namespace RPGManager.Tests.Items;
+namespace RPGManager.Tests.GameData.Items;
 
 public class ItemTest
 {
