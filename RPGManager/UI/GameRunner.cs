@@ -7,7 +7,7 @@ namespace RPGManager.UI;
 
 public static class GameRunner
 {
-    public static void RunGame(GameAssetRegistry  assetRegistry)
+    public static void RunGame(GameAssetRegistry assetRegistry)
     {
         Campaign campaign = new Campaign();
         campaign.EnableAllClasses(assetRegistry.Classes.Keys);
@@ -40,17 +40,17 @@ public static class GameRunner
                     CharacterEditor.Run(campaign, assetRegistry);
                     break;
                 case "3":
-                    // Reload the saved campaign to create an independent snapshot.
-                    savedCampaign= SaveCampaignMenu(campaign);
+                    // Reload the saved campaign to create an independent snapshot, passing assetRegistry for re-linking
+                    savedCampaign = SaveCampaignMenu(campaign, assetRegistry);
                     break;
                 case "4":
-                    if(ExitConfirmationMenu(campaign, savedCampaign))
+                    if (ExitConfirmationMenu(campaign, savedCampaign))
                     {
-                        (campaign, savedCampaign) = LoadCampaignMenu(campaign, savedCampaign);
+                        (campaign, savedCampaign) = LoadCampaignMenu(campaign, savedCampaign, assetRegistry);
                     }
                     break;
                 case "5":
-                    if(ExitConfirmationMenu(campaign, savedCampaign)) 
+                    if (ExitConfirmationMenu(campaign, savedCampaign)) 
                         exit = true;
                     break;
                 default:
@@ -81,7 +81,7 @@ public static class GameRunner
         }
 
         campaign.AddCharacter(character);
-        Console.WriteLine($"Successfully created {character.Name} the {character.Class.Name}!");
+        Console.WriteLine($"Successfully created {character.Name}!");
     }
 
     private static (string? Name, CharacterClass? CharacterClass, int Hp) PromptForNewCharacterDetails(
@@ -124,7 +124,7 @@ public static class GameRunner
         return (name, selectedClass, hp);
     }
 
-    private static Campaign SaveCampaignMenu(Campaign campaign)
+    private static Campaign SaveCampaignMenu(Campaign campaign, GameAssetRegistry assetRegistry)
     {
         Console.WriteLine("What would you like to save the campaign as?");
         var input = Console.ReadLine();
@@ -133,7 +133,7 @@ public static class GameRunner
             if (!string.IsNullOrEmpty(input) && !SaveManager.SaveExists(input))
             {
                 SaveManager.Save(campaign, input);
-                return SaveManager.Load(input);
+                return SaveManager.Load(input, assetRegistry);
             }
 
             if (string.IsNullOrEmpty(input))
@@ -142,10 +142,10 @@ public static class GameRunner
                 return campaign;
             }
 
-            Console.WriteLine("The campaign file already exists. Do you want to overwrite it?");
+            Console.WriteLine("The campaign folder/file already exists. Do you want to overwrite it?");
             if (!ConsolePrompts.ConfirmOperation()) return campaign;
             SaveManager.Save(campaign, input);
-            return SaveManager.Load(input);
+            return SaveManager.Load(input, assetRegistry);
         }
         catch (InvalidOperationException ex)
         {
@@ -153,8 +153,9 @@ public static class GameRunner
             return campaign;
         }
     }
+
     private static (Campaign Campaign, Campaign SavedCampaign)
-        LoadCampaignMenu(Campaign campaign, Campaign savedCampaign)
+        LoadCampaignMenu(Campaign campaign, Campaign savedCampaign, GameAssetRegistry assetRegistry)
     {
         try
         {
@@ -168,7 +169,7 @@ public static class GameRunner
                 return (campaign, savedCampaign);
             }
 
-            var loadedCampaign = SaveManager.Load(selectedSave);
+            var loadedCampaign = SaveManager.Load(selectedSave, assetRegistry);
             return (loadedCampaign, loadedCampaign);
         }
         catch (InvalidOperationException ex)

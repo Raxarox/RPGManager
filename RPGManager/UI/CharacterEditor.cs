@@ -6,7 +6,7 @@ namespace RPGManager.UI;
 
 public static class CharacterEditor
 {
-    public static void Run(Campaign campaign, GameAssetRegistry  assetRegistry)
+    public static void Run(Campaign campaign, GameAssetRegistry assetRegistry)
     {
         var exit = false;
         while (!exit && campaign.Characters.Count > 0)
@@ -37,8 +37,9 @@ public static class CharacterEditor
     private static string FormatCharacter(Character character)
     {
         var scores = character.AbilityScores;
+        var classesString = string.Join(" / ", character.Classes.Select(c => $"{c.ClassAsset?.Name ?? "Unknown"} {c.Level}"));
         return character.Name + " - " +
-               character.Class.Name + " - " +
+               classesString + " (Total Level: " + character.TotalLevel + ") - " +
                character.MaxHealth + " Max HP - " +
                character.Health + " HP." +
                $"\nSTR: {scores.Strength} | DEX: {scores.Dexterity} | CON: {scores.Constitution} | " +
@@ -56,7 +57,7 @@ public static class CharacterEditor
         if (ConsolePrompts.ConfirmOperation()) campaign.RemoveCharacter(character);
     }
 
-    private static void EditCharacter(Campaign campaign, GameAssetRegistry  assetRegistry)
+    private static void EditCharacter(Campaign campaign, GameAssetRegistry assetRegistry)
     {
         var character = SelectCharacter(campaign,
             "Which character would you like to edit? Please enter the character's ID");
@@ -68,18 +69,20 @@ public static class CharacterEditor
             Console.WriteLine(FormatCharacter(character));
             Console.WriteLine("What would you like to edit?");
             Console.WriteLine("1. Edit Name.");
-            Console.WriteLine("2. Edit Class.");
-            Console.WriteLine("3. Edit Max HP.");
-            Console.WriteLine("4. Edit Ability Scores.");
-            Console.WriteLine("5. Cancel.");
+            Console.WriteLine("2. Level Up / Add Multiclass.");
+            Console.WriteLine("3. Change/Reset Base Class."); // Added option
+            Console.WriteLine("4. Edit Max HP.");
+            Console.WriteLine("5. Edit Ability Scores.");
+            Console.WriteLine("6. Cancel.");
             var input = Console.ReadLine();
             switch (input)
             {
                 case "1": EditName(character); close = true; break;
-                case "2": EditClass(character, campaign, assetRegistry.Classes); close = true; break;
-                case "3": EditMaxHp(character); close = true; break;
-                case "4": EditAbilityScores(character); close = true; break;
-                case "5": close = true; break;
+                case "2": LevelUpCharacter(character, campaign, assetRegistry.Classes); close = true; break;
+                case "3": ChangeClass(character, campaign, assetRegistry.Classes); close = true; break;
+                case "4": EditMaxHp(character); close = true; break;
+                case "5": EditAbilityScores(character); close = true; break;
+                case "6": close = true; break;
                 default: Console.WriteLine("Invalid input."); break;
             }
         }
@@ -98,14 +101,55 @@ public static class CharacterEditor
         Console.WriteLine("Character's name changed to '" + character.Name + "' successfully");
     }
 
-    private static void EditClass(Character character, Campaign campaign, IReadOnlyDictionary<string, CharacterClass> masterClassRegistry)
+    private static void LevelUpCharacter(Character character, Campaign campaign, IReadOnlyDictionary<string, CharacterClass> masterClassRegistry)
     {
         var classList = campaign.AvailableClasses;
 
-        Console.WriteLine($"What would you like to change {character.Name}'s class to?");
+        Console.WriteLine($"Select a class to level up or multiclass into for {character.Name}:");
         for (int i = 0; i < classList.Count; i++)
         {
-            // If you want it to look pretty (e.g., capitalizing the ID), you can format it here
+            Console.WriteLine($"{i + 1}. {classList[i]}");
+        }
+    
+        CharacterClass? selectedClass = null;
+        while (selectedClass == null)
+        {
+            Console.Write("Enter the number of the class: ");
+            string? input = Console.ReadLine();
+
+            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= classList.Count)
+            {
+                string selectedId = classList[choice - 1];
+
+                if (masterClassRegistry.TryGetValue(selectedId, out var foundClass))
+                {
+                    selectedClass = foundClass;
+                }
+                else
+                {
+                    Console.WriteLine($"Error: The class definition for '{selectedId}' could not be found in the registry.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Please enter a valid number from the list.");
+            }
+        }
+
+        Console.WriteLine($"Enter the hit die roll + Con modifier gained from taking a level in {selectedClass.Name}:");
+        int hitDieGain = ConsolePrompts.GetPositiveIntegerFor("hit point increase");
+
+        character.LevelUp(selectedClass, hitDieGain);
+        Console.WriteLine($"{character.Name} has successfully leveled up in {selectedClass.Name}! New Max HP: {character.MaxHealth}");
+    }
+    private static void ChangeClass(Character character, Campaign campaign, IReadOnlyDictionary<string, CharacterClass> masterClassRegistry)
+    {
+        var classList = campaign.AvailableClasses;
+
+        Console.WriteLine($"WARNING: This will reset {character.Name}'s class progression and replace their starting class.");
+        Console.WriteLine($"Select a new base class for {character.Name}:");
+        for (int i = 0; i < classList.Count; i++)
+        {
             Console.WriteLine($"{i + 1}. {classList[i]}");
         }
     
@@ -134,10 +178,11 @@ public static class CharacterEditor
             }
         }
 
-        character.SetCharacterClass(selectedClass);
-        Console.WriteLine($"{character.Name}'s class has been updated to {character.Class.Name}.");
+        // Overwrites the class list with a fresh Level 1 of the new choice
+        character.SetInitialClass(selectedClass);
+        Console.WriteLine($"{character.Name}'s base class has been changed to {selectedClass.Name} (Level 1).");
     }
-
+    
     private static void EditMaxHp(Character character)
     {
         Console.WriteLine("What would you like to change " + character.Name + "'s max HP to?");
@@ -185,7 +230,7 @@ public static class CharacterEditor
     {
         Console.WriteLine("What would you like to sort the characters by?");
         Console.WriteLine("1. Name.");
-        Console.WriteLine("2. Class.");
+        Console.WriteLine("2. Total Level.");
         Console.WriteLine("3. HP.");
         Console.WriteLine("4. Ability Scores.");
         Console.WriteLine("5. Cancel.");
@@ -195,7 +240,7 @@ public static class CharacterEditor
             case "1":
                 return characters.OrderBy(c => c.Name).ToList();
             case "2":
-                return characters.OrderBy(c => c.Class.Name).ToList();
+                return characters.OrderByDescending(c => c.TotalLevel).ToList();
             case "3":
                 return characters.OrderBy(c => c.MaxHealth).ToList();
             case "4":
