@@ -30,6 +30,7 @@ public class Armor : Item
         ValidationHelper.ValidatePositiveValue(name, "Armor", nameof(armorClassBonus), armorClassBonus);
 
         ArmorClassBonus = armorClassBonus;
+        ItemCategory = ItemCategory.Armor;
         ArmorType = armorType;
     }
 }

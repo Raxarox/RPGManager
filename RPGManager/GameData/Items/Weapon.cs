@@ -61,6 +61,7 @@ public class Weapon : Item
 
         DamageDice = damageDice;
         DamageType = damageType ?? DamageTypes.Slashing;
+        ItemCategory = ItemCategory.Weapon;
         Category = category;
         AttackType = attackType;
         Handedness = handedness;

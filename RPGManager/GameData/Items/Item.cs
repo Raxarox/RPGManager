@@ -3,11 +3,26 @@ using RPGManager.System;
 
 namespace RPGManager.GameData.Items;
 
+public enum ItemCategory
+{
+    Weapon,
+    Armor,
+    WondrousItem,
+    Potion,
+    Scroll,
+    Ammunition,
+    Material,
+    Valuable,
+    UtilityItem
+}
+
 [JsonDerivedType(typeof(Weapon), "Weapon")]
 [JsonDerivedType(typeof(Armor), "Armor")]
+[JsonDerivedType(typeof(StackableItem), "StackableItem")]
 
 public abstract class Item
 {
+    public ItemCategory ItemCategory { get; init; }
     public string TemplateId { get; init; }
     public string Name { get; init; }
     public decimal Weight { get; init; }
